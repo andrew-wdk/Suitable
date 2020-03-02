@@ -4,10 +4,16 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Sassnowski\LaravelShareableModel\Shareable\Shareable;
+use Sassnowski\LaravelShareableModel\Shareable\ShareableInterface;
 
 
-class Event extends Model
+class Event extends Model implements ShareableInterface
 {
+
+    use SoftDeletes;
+    use Shareable;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -16,8 +22,6 @@ class Event extends Model
      protected $fillable = [
         'user_id', 'title', 'description', 'duration', 'startDate', 'endDate'
     ];
-
-    use SoftDeletes;
 
     /**
     * Get the event's host.
@@ -39,7 +43,5 @@ class Event extends Model
     {
         return $this->hasMany('App\Comment');
     }
-
-
 
 }

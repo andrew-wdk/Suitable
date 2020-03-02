@@ -176,6 +176,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
+        Sassnowski\LaravelShareableModel\ShareableLinkServiceProvider::class,
 
     ],
 

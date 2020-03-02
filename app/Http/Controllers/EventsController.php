@@ -11,6 +11,7 @@ use App\comment;
 use Illuminate\Support\Facades\Auth;
 use App\DateTimePeriod;
 use Carbon\Carbon;
+use Sassnowski\LaravelShareableModel\Shareable\ShareableLink;
 
 
 class EventsController extends Controller
@@ -20,13 +21,13 @@ class EventsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($link = null)
     {
         $user = User::Find(Auth::id());
 
         $events = $user->events;
 
-        return view('ShowEvents', compact('events'));
+        return view('ShowEvents', compact('events', 'link'));
     }
 
     /**
@@ -116,13 +117,62 @@ class EventsController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
         Event::Find($id)->delete();
         return redirect('/MyEvents');
     }
+
+    /**
+     * Generate a sharable link for the event to allow participants to join.
+     *
+     * @param  int  $id
+     */
+     public function share($id)
+     {
+         $event = Event::Find($id);
+
+         if (ShareableLink::where('shareable_id', '=', $id)->exists()){
+            $link = ShareableLink::where('shareable_id', '=', $id)->get();
+            return EventsController::index($link[0]);
+         }
+
+         $link = ShareableLink::buildFor($event)
+                ->setActive()
+                ->build();
+                
+         return EventsController::index($link);
+     }
+
+     /**
+     * Generate a sharable link for the event to allow participants to join.
+     *
+     * @param  int  $id
+     */
+     public function participate($link)
+     {  
+        $event = $link->shareable;
+
+        $host = $event->host;
+            
+        return view('Participate', compact('event', 'host'));
+     }
+
+     public function confirmParticipation($id)
+     {  
+        $event = Event::Find($id);
+
+        $user_id = Auth::id();
+
+        $ids = $event->users->pluck('id')->toArray();
+
+        if(!in_array($user_id, $ids))
+        {
+            $event->users()->attach($user_id);
+        }   
+        return EventsController::show($id);
+     }
 
     /**
      * generates the avialable periods based on the unavailables of the participants.

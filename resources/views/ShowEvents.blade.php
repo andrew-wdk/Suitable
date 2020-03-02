@@ -26,18 +26,24 @@
                             <td>{{$event['discription']}}</td>
                             <td>{{$event['created_at']->diffForhumans()}}</td>                            
                             <td><a href="{{ route('availables', ['id' => $event->id]) }}">Show</a></td>
+                            @can('view-participants',[$event])
+                                <td><a href="{{ route('shareEvent', ['id' => $event->id]) }}">Get sharable link</a>
+                                @if(isset($link) && $link->shareable_id == $event->id)
+                                    <br>
+                                    <input type="text" id="Id" name="link" value="{{$link->url}}">
+                                @endif
+                            @endcan
+                            </td>
                             <td>{{ Form::open(['method' => 'DELETE', 'action' => ['EventsController@destroy', $event->id]]) }}
                                 @can('delete', [$event]) {{ Form::submit('delete')}} @endcan
                                 {{ Form::close()}}
                             </td>
                         </tr>
-
                             @endforeach
                         @endif
 
                     </tbody>
                     </table>
-
 
                     </div>
 

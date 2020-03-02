@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
         'ShowEvent' => \App\Http\Middleware\ShowEvent::class,
         'loggedIn' => \App\Http\Middleware\loggedIn::class,
         'Admin' => \App\Http\Middleware\Admin::class,
+        'shared' => \Sassnowski\LaravelShareableModel\Http\Middleware\ValidateShareableLink::class,
     ];
 
     /**

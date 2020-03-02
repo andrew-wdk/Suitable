@@ -1,5 +1,7 @@
 <?php
 
+use Sassnowski\LaravelShareableModel\Shareable\ShareableLink;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -37,6 +39,10 @@ Route::get('/event/show/{id}', 'EventsController@show')->name('availables')->mid
 
 Route::resource('events', 'EventsController');
 
+Route::get('event/share/{id}', 'EventsController@share')->name('shareEvent');
+
+Route::get('event/participate/{id}', 'EventsController@confirmParticipation')->name('Confirm');
+
 Route::resource('unavailables', 'UnavailablesController');
 
 Route::delete('repeatables/{id}', 'UnavailablesController@RepDestroy')->name('repeatables.destroy');
@@ -46,3 +52,5 @@ Route::resource('comments', 'CommentsController');
 //Route::resource('repeatables', 'RepeatablesController');
 
 Route::resource('users', 'UsersController')->middleware('Admin');
+
+Route::get('shared/{shareable_link}', 'EventsController@participate')->middleware('shared');
