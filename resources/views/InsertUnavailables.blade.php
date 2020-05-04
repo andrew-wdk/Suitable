@@ -8,7 +8,7 @@
                 <div class="card-header">New Unavailable</div>
 
                     <div class="card-body">
-            
+
                     {{ Form::open(['method' => 'POST', 'action' => 'UnavailablesController@store']) }}
 
                     <dev>
@@ -17,19 +17,19 @@
                     <br>
                     </dev>
 
-                    <dev> 
+                    <dev>
                     {{ Form::label('end', 'End:') }}
                     {{ Form::datetime('end', date('Y-m-d H:i').':00') }}
                     <br>
                     </dev>
 
-                    <dev> 
+                    <dev>
                     {{ Form::label('title', 'Title:') }}
                     {{ Form::text('title', null) }}
                     <br>
                     </dev>
-                    
-                    <dev> 
+
+                    <dev>
                     {{ Form::label('Repeat', 'Repeat every: Sun ') }}
                     {{ Form::checkbox('7', true)}}
                     {{ Form::label('Mon', ' Mon ') }}
@@ -46,7 +46,7 @@
                     {{ Form::checkbox('6', true)}}
                     <br>
                     </dev>
-                    
+
                     <dev>
                     {{ Form::text('priority', '1', $attributes = array('hidden')) }}
                     </dev>
@@ -55,6 +55,7 @@
 
                     {{ Form::close() }}
 
+                    <div class="text-danger"><br>{{$errors->first()}}<div>
                     </div>
 
                 </div>

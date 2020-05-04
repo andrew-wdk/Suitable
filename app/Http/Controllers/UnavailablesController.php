@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Unavailable;
 use App\Repeatable;
 use Illuminate\Support\Facades\Auth;
+Use App\Http\Requests\UnavailableRequest;
 
 class UnavailablesController extends Controller
 {
@@ -19,7 +20,7 @@ class UnavailablesController extends Controller
         $unavailables = Unavailable::where('user_id', '=', Auth::id())
                                     ->orderBy('start', 'asc')
                                     ->get();
-        
+
         $repeatables = Repeatable::where('user_id', '=', Auth::id())->get();
 
         $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -43,7 +44,7 @@ class UnavailablesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UnavailableRequest $request)
     {
         $user_id = Auth::id();
 
@@ -57,7 +58,7 @@ class UnavailablesController extends Controller
         if ($repeat == false)
         {
             $unavailable = new Unavailable;
-            
+
             $unavailable['user_id'] = $user_id;
             $unavailable['start'] = $request['start'];
             $unavailable['end'] = $request['end'];
@@ -66,10 +67,10 @@ class UnavailablesController extends Controller
 
             $unavailable->save();
         }
-        else 
+        else
         {
             $repeatable = new Repeatable;
-            
+
             $repeatable['user_id'] = $user_id;
             $repeatable['start'] = $request['start'];
             $repeatable['end'] = $request['end'];
