@@ -51,7 +51,7 @@ class EventsController extends Controller
         $event = new Event;
 
         $user_id = Auth::id();
-        
+
         $event['host_id'] = $user_id;
 
         $event['title'] = $request['title'];
@@ -65,7 +65,7 @@ class EventsController extends Controller
 
         $event->save();
 
-        $event->users()->attach($user_id);        
+        $event->users()->attach($user_id);
 
         return redirect('/home');
     }
@@ -77,17 +77,18 @@ class EventsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {  
+    {
         $event = Event::Find($id);
         $availables = EventsController::availables($id);
+        $blocks = json_encode(EventsController::availables($id,1));
         $comments = [];
         foreach ($availables as $i=>$av) {
             $comments[$i] = Comment::where('event_id', '=', $id)
                                     ->where('start', '=', $av->startDate)
-                                    ->get();    
+                                    ->get();
         }
         $guests = Event::Find($id)->users;
-        return view('availables', compact(['event', 'availables', 'comments', 'guests']));
+        return view('availables3', compact(['event', 'availables', 'comments', 'guests', 'blocks']));
     }
 
     /**=
@@ -141,7 +142,7 @@ class EventsController extends Controller
          $link = ShareableLink::buildFor($event)
                 ->setActive()
                 ->build();
-                
+
          return EventsController::index($link);
      }
 
@@ -151,16 +152,16 @@ class EventsController extends Controller
      * @param  int  $id
      */
      public function participate($link)
-     {  
+     {
         $event = $link->shareable;
 
         $host = $event->host;
-            
+
         return view('Participate', compact('event', 'host'));
      }
 
      public function confirmParticipation($id)
-     {  
+     {
         $event = Event::Find($id);
 
         $user_id = Auth::id();
@@ -170,7 +171,7 @@ class EventsController extends Controller
         if(!in_array($user_id, $ids))
         {
             $event->users()->attach($user_id);
-        }   
+        }
         return EventsController::show($id);
      }
 
@@ -180,23 +181,26 @@ class EventsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-     public function availables($id)
-     {  
+     public function availables($id, $js = 0)
+     {
 
          $event = Event::findOrFail($id);
-         
+
          // get an array of participants' ids.
          $ids = $event->users->pluck('id')->toArray();
-         
+
          //get the unavailables of the participants during the event time period.
          $unavailables = Unavailable::whereIn('user_id', $ids)
                                     ->where('end', '>', $event->startDate)
                                     ->where('start', '<', $event->endDate)
                                     ->orderBy('start', 'asc')
                                     ->get();
-        
+
         //get the repeatables of the participants.
+        // if($js == 1) $repeatables = Repeatable::whereIn('user_id', $ids)->where('title', '!=', 'sleep')->get();
+        // else
         $repeatables = Repeatable::whereIn('user_id', $ids)->get();
+
 
         // convert the unavailables to DateTimePeriod instances.
         $unav_periods = [];
@@ -207,8 +211,8 @@ class EventsController extends Controller
                 $unavailable->user_id
             ));
         }
-    
-        
+
+
         // add the repeatbles to the unav_periods array.
         for ($i = Carbon::parse($event->startDate);
              $i <= Carbon::parse($event->endDate);
@@ -233,23 +237,62 @@ class EventsController extends Controller
                             $repeatable->user_id
                         ));
                     }
-                
+
                 }
             }
         }
-        
+
         // sort the unav_periods array after adding the repeatables
         usort($unav_periods, function ($a, $b){
             if($a->startDate->lt($b->startDate)) return -1;
             else if ($a->startDate->eq($b->startDate)) return 0;
             else return 1;
-            });
+        });
 
-            //dd($unav_periods); exit;
+        // removes repeatbles that are out of the event range
+        foreach($unav_periods as $key => $period){
+            if($period->endDate->lt($event->startDate)
+            || $period->startDate->gt($event->endDate)){
+                // dd($period);
+                unset($unav_periods[$key]);
+            }
+        }
+
+        //separate unav_periods into single time stamps for computing the intersections
+        $points = [];
+        foreach ($unav_periods as $period){
+            array_push($points, (object) ['time' => $period->startDate,
+                'is_start' => true, 'user_id' => $period->user_id]);
+            array_push($points, (object) ['time' => $period->endDate,
+            'is_start' => false, 'user_id' => $period->user_id]);
+        }
+
+        usort($points, function ($a, $b){
+            if($a->time->lt($b->time)) return -1;
+            else if ($a->time->eq($b->time)) return 0;
+            else return 1;
+        });
+
+        //creat intersections array
+        $i_level = 0;
+
+        $intersections[0] = new DateTimePeriod (Carbon::parse($event->startDate), null, $i_level);
+        foreach ($points as $i => $point){
+            if ($points[$i]->time->lt(Carbon::parse($event->startDate))){
+                $points[$i]->time = Carbon::parse($event->startDate);
+            }
+            $intersections[$i]->setEndDate($point->time);
+            if ($point->is_start) $i_level++;
+            else $i_level--;
+            $intersections[$i+1] = new DateTimePeriod ($point->time, null, $i_level);
+        }
+        array_pop($intersections);
+
+        if($js == 1) return $intersections;
 
         // creates an array of available periods.
         $event_periods = [New DateTimePeriod($event->startDate, $event->endDate)];
-        
+
 
         //split the available periods based on the unavailables.
         foreach ($unav_periods as $period) {
@@ -279,7 +322,8 @@ class EventsController extends Controller
             }
         }
 
-
-         return $event_periods;
-     }
+        // echo(json_encode($intersections));
+        // exit;
+        return $event_periods;
+    }
 }

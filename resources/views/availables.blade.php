@@ -7,7 +7,7 @@
     <div class="card">
     <div class="card-header"> {{$event->title}} </div>
     <div class="card-body">
-            
+
         <table class="table">
             <thead>
             <tr>
@@ -17,10 +17,13 @@
                 <th>comments</th>
             </tr>
             </thead>
-            
+
             <tbody>
             @if($availables)
                 @foreach($availables as $i=>$av)
+                    @if($av->startDate->floatDiffInHours($av->endDate) < $event->duration)
+                        @continue;
+                    @endif
                     <tr>
                         <td>{{$av->startDate->format('l j-M g:i A')}}</td>
                         <td>{{$av->endDate->format('l j-M g:i A')}}</td>
@@ -35,7 +38,7 @@
                             {{ Form::close()}}
 
                             {{-- comments and delete button --}}
-                            @foreach($comments[$i] as $comment)                            
+                            @foreach($comments[$i] as $comment)
                                 {{ Form::open(['method' => 'DELETE', 'action' => ['CommentsController@destroy', $comment->id]]) }}
                                 <font color="red">{{$comment->user->name}}: &nbsp</font> {{$comment->body}}
                                 @can('delete', [$comment]) {{ Form::submit('del')}} @endcan
@@ -47,17 +50,17 @@
             @endif
             </tbody>
         </table>
-                    
+
         @can('view-participants',[$event])
             <br>
             <h2> Participants: </h2>
             <ol>
                 @foreach($guests as $user)
                     <li> {{$user->name}} </li>
-                @endforeach 
+                @endforeach
             </ol>
         @endcan
-                    
+
     </div>
     </div>
     </div>

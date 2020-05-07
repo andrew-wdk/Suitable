@@ -21,15 +21,13 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/admin-home', 'AdminController@Home')->name('admin');
-
-Route::get('/admin-events', 'AdminController@events')->name('admin.events');
-
-Route::get('/admin-comments', 'AdminController@comments')->name('admin.comments');
-
-Route::get('/admin-unavailables', 'AdminController@unavailables')->name('admin.unavailables');
-
-Route::post('/MakeAdmin/{id}', 'AdminController@MakeAdmin')->name('MakeAdmin');
+Route::group(['middleware' => 'Admin'], function () {
+    Route::get('/admin-home', 'AdminController@Home')->name('admin');
+    Route::get('/admin-events', 'AdminController@events')->name('admin.events');
+    Route::get('/admin-comments', 'AdminController@comments')->name('admin.comments');
+    Route::get('/admin-unavailables', 'AdminController@unavailables')->name('admin.unavailables');
+    Route::post('/MakeAdmin/{id}', 'AdminController@MakeAdmin')->name('MakeAdmin');
+});
 
 //Route::get('/insert-Unavailables', 'UnavailablesController@create')->name('insertUnavailables')->middleware('loggedIn');
 
@@ -43,7 +41,7 @@ Route::get('event/share/{id}', 'EventsController@share')->name('shareEvent');
 
 Route::get('event/participate/{id}', 'EventsController@confirmParticipation')->name('Confirm');
 
-Route::resource('unavailables', 'UnavailablesController');
+Route::resource('unavailables', 'UnavailablesController')->middleware('loggedIn');
 
 Route::delete('repeatables/{id}', 'UnavailablesController@RepDestroy')->name('repeatables.destroy');
 
