@@ -45,7 +45,7 @@ class RepeatablesTableSeeder extends Seeder
 
                 $rep = Repeatable::create([
                     'start' =>($start = $faker->time('H:i:s')),
-                    'end' => ($prev = $faker->dateTimeInInterval($start, '+4 hours')),
+                    'end' => ($prev = $this->addTime($start, $this->TimeBetween(1, 5))),
                     'title' => $faker->word,
                     'Mon' => rand(1, 7) <= 2 ? $one($noDay) : null,
                     'Tue' => rand(1, 7) <= 2 ? $one($noDay) : null,
