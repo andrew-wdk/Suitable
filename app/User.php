@@ -20,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'social_type', 'social_id'
     ];
 
     /**
@@ -63,7 +63,7 @@ class User extends Authenticatable
         return $this->hasMany('App\Comment');
     }
 
-  
+
     public function unavailables()
     {
         return $this->hasMany('App\Unavailable');
