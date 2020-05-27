@@ -37,7 +37,7 @@ class EventsTableSeeder extends Seeder
                 $not_host = $n != $id;
                 return $range && $id;
             };
-            $no_of_participants = rand(1,15);
+            $no_of_participants = rand(2,15);
             for ($i = 0; $i < $no_of_participants; $i++) {
                 do{$rand = $faker->valid($validUser)->randomNumber(2);}
                 while(in_array($rand, $values)); // checks for repetitions

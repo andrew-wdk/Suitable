@@ -22,12 +22,7 @@ class UnavailablesControllerTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'UsersTableSeeder']);
 
     }
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-
+    
      /** @test */
     public function user_can_view_unavailables_page()
     {

@@ -21,10 +21,10 @@ class ShowEvent
         $event = Event::Find($request->route('id'));
 
 
-        if ($user->can('view', $event)) 
+        if ($user->can('view', $event))
         {
             return $next($request);
         }
-        return redirect('/MyEvents');
+        return redirect('/events');
     }
 }

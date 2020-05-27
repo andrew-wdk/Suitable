@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\EventRequest;
 use App\Event;
 use App\User;
 use App\Unavailable;
@@ -46,7 +47,7 @@ class EventsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(EventRequest $request)
     {
         $event = new Event;
 
@@ -79,6 +80,10 @@ class EventsController extends Controller
     public function show($id)
     {
         $event = Event::Find($id);
+
+        $this->authorize('view', $event);
+
+        $user = Auth::user();
         $availables = EventsController::availables($id);
         $blocks = json_encode(EventsController::availables($id,1));
         $comments = [];
@@ -88,7 +93,7 @@ class EventsController extends Controller
                                     ->get();
         }
         $guests = Event::Find($id)->users;
-        return view('availables3', compact(['event', 'availables', 'comments', 'guests', 'blocks']));
+        return view('availables3', compact(['event', 'user', 'availables', 'comments', 'guests', 'blocks']));
     }
 
     /**=
@@ -121,8 +126,9 @@ class EventsController extends Controller
      */
     public function destroy($id)
     {
+        $this->authorize('delete', $event);
         Event::Find($id)->delete();
-        return redirect('/MyEvents');
+        return redirect('/events');
     }
 
     /**
@@ -130,21 +136,22 @@ class EventsController extends Controller
      *
      * @param  int  $id
      */
-     public function share($id)
-     {
-         $event = Event::Find($id);
+    public function share($id)
+    {
+    $event = Event::Find($id);
+    $this->authorize('getShareableLink', $event);
 
-         if (ShareableLink::where('shareable_id', '=', $id)->exists()){
-            $link = ShareableLink::where('shareable_id', '=', $id)->get();
-            return EventsController::index($link[0]);
-         }
+        if (ShareableLink::where('shareable_id', '=', $id)->exists()){
+        $link = ShareableLink::where('shareable_id', '=', $id)->get();
+        return EventsController::index($link[0]);
+        }
 
-         $link = ShareableLink::buildFor($event)
-                ->setActive()
-                ->build();
+        $link = ShareableLink::buildFor($event)
+            ->setActive()
+            ->build();
 
-         return EventsController::index($link);
-     }
+        return EventsController::index($link);
+    }
 
      /**
      * Generate a sharable link for the event to allow participants to join.

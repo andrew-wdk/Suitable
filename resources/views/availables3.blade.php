@@ -25,6 +25,7 @@
         font-size: 1vw;
     }
 </style>
+@endsection
 
 @section('content')
 <div class="container">
@@ -97,7 +98,9 @@
             </tbody>
         </table>
 
-        @can('view-participants',[$event])
+
+        @if($user->can('view-participants',$event) || $user->hasRole('admin|super_admin'))
+        {{-- @can('view-participants',[$event]) --}}
             <br>
             <h2> Participants: </h2>
             <ol>
@@ -105,7 +108,8 @@
                     <li> {{$user->name}} </li>
                 @endforeach
             </ol>
-        @endcan
+        {{-- @endcan --}}
+        @endif
 
     </div>
     </div>
@@ -164,7 +168,7 @@
         child.style.backgroundColor = heatMap(blocks[i].user_id, max_level);
 
 
-        if (endDate.getDate() > date.getDate()){
+        if (endDate.getDate() != date.getDate()){
             var overflow = endDate.getTime()-endDate.setHours(0,0,0);
             var child2 = document.createElement("DIV");
             child2.className = "block";

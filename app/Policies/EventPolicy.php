@@ -31,8 +31,8 @@ class EventPolicy
     public function view(User $user, Event $event)
     {
         $users = $event->users->pluck('id')->toArray();
-
-        return in_array ($user->id, $users);
+        $allow = in_array ($user->id, $users) || $user->hasAnyRole('admin', 'super_admin');
+        return $allow;
     }
 
     /**
@@ -92,5 +92,10 @@ class EventPolicy
     public function forceDelete(User $user, Event $event)
     {
         //
+    }
+
+    public function getShareableLink(User $user, Event $event)
+    {
+        return $event->host_id == $user->id;
     }
 }

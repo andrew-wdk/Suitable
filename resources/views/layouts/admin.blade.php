@@ -12,7 +12,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <title>AdminLTE 3 | Starter</title>
 
   <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="../node_modules/admin-lte/plugins/fontawesome-free/css/all.min.css">
+  {{-- <link rel="stylesheet" href="../node_modules/admin-lte/plugins/fontawesome-free/css/all.min.css"> --}}
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <!-- Theme style -->
   <link rel="stylesheet" href="../node_modules/admin-lte/dist/css/adminlte.min.css">
   <!-- Google Font: Source Sans Pro -->
@@ -233,7 +234,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-12">
-              
+
         @yield('content')
             <div class="card">
               <div class="card-body">

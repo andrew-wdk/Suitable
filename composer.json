@@ -14,6 +14,7 @@
         "fideloper/proxy": "^4.0",
         "jeroennoten/laravel-adminlte": "^3.2",
         "laravel/framework": "^6.2",
+        "laravel/socialite": "^4.3",
         "laravel/tinker": "^2.0",
         "laravelcollective/html": "^6.0",
         "sassnowski/laravel-shareable-models": "^2.1",

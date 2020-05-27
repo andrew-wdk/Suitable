@@ -8,7 +8,7 @@
                 <div class="card-header">My Events</div>
 
                     <div class="card-body">
-            
+
                     <table class="table">
                     <thead>
                         <tr>
@@ -24,8 +24,8 @@
                         <tr>
                             <td>{{$event['title']}}</td>
                             <td>{{$event['discription']}}</td>
-                            <td>{{$event['created_at']->diffForhumans()}}</td>                            
-                            <td><a href="{{ route('availables', ['id' => $event->id]) }}">Show</a></td>
+                            <td>{{$event['created_at']->diffForhumans()}}</td>
+                            <td><a href="{{ route('events.show', ['event' => $event->id]) }}">Show</a></td>
                             @can('view-participants',[$event])
                                 <td><a href="{{ route('shareEvent', ['id' => $event->id]) }}">Get sharable link</a>
                                 @if(isset($link) && $link->shareable_id == $event->id)
