@@ -145,6 +145,50 @@ class EventsControllerTest extends TestCase
         $this->assertEquals($link, $link2);
     }
 
+    /** @test */
+    public function user_can_view_participation_page_via_shareable_link()
+    {
+        $event = Event::find(1);
+
+        $host = $event->host;
+
+        $response = $this->actingAs($host)->get('event/share/1');
+
+        $data = $response->getOriginalContent()->getData();
+        $link = $data['link']->url;
+
+        // $user = User::create(['name' => 'user', 'email' => 'example@site.com']);
+
+        $response = $this->
+        // actingAs($user)->
+        get($link);
+
+        $response->assertStatus(200);
+        $response->assertViewIs('Participate');
+        $response->assertViewHas('event');
+        $response->assertViewHas('host');
+    }
+
+    /** @test */
+    public function unauthenticated_user_is_redirected_to_login_page_then_added_to_participants()
+    {
+        $event = Event::find(1);
+
+        $host = $event->host;
+
+        $response = $this->get('event/participate/1');
+        $response->assertStatus(302);
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('intended', url('event/participate/1'));
+
+        $user = User::Find(2);
+
+        $response = $this->post(route('login'), ['email' => $user->email, 'password' => 'password']);
+        $this->assertAuthenticated();
+        $response->assertStatus(302);
+        $response->assertRedirect(url('home'));
+    }
+
 
 
 

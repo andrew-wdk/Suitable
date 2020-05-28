@@ -36,7 +36,7 @@ class Event extends Model implements ShareableInterface
     */
     public function users()
     {
-        return $this->belongsToMany('App\User');
+        return $this->belongsToMany('App\User')->withTimestamps();
     }
 
     public function comments()

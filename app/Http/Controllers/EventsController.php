@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use App\DateTimePeriod;
 use Carbon\Carbon;
 use Sassnowski\LaravelShareableModel\Shareable\ShareableLink;
+use Illuminate\Auth\Access\AuthorizationException;
 
 
 class EventsController extends Controller
@@ -154,9 +155,9 @@ class EventsController extends Controller
     }
 
      /**
-     * Generate a sharable link for the event to allow participants to join.
+     * show a summery for the event upon which the user should decide whether to participate.
      *
-     * @param  int  $id
+     * @param  shareablelink  $link
      */
      public function participate($link)
      {
@@ -167,9 +168,20 @@ class EventsController extends Controller
         return view('Participate', compact('event', 'host'));
      }
 
-     public function confirmParticipation($id)
+     public function confirmParticipation(Request $request, $id)
      {
         $event = Event::Find($id);
+        
+        try{
+            $this->authorize('participate', $event);
+        }catch(\Exception $ex){
+            if($ex instanceof AuthorizationException){
+                // $intended = $request->session()->previousUrl();
+                $intended = $request->url();
+                $request->session()->put('intended', $intended);
+                return redirect('/login');
+            }
+        }
 
         $user_id = Auth::id();
 

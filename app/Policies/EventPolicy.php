@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Event;
 use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Auth;
 
 class EventPolicy
 {
@@ -97,5 +98,10 @@ class EventPolicy
     public function getShareableLink(User $user, Event $event)
     {
         return $event->host_id == $user->id;
+    }
+
+    public function participate(User $user, Event $event)
+    {
+        return auth::check();
     }
 }
