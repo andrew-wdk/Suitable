@@ -171,7 +171,7 @@ class EventsController extends Controller
      public function confirmParticipation(Request $request, $id)
      {
         $event = Event::Find($id);
-        
+
         try{
             $this->authorize('participate', $event);
         }catch(\Exception $ex){
@@ -294,6 +294,7 @@ class EventsController extends Controller
 
         //creat intersections array
         $i_level = 0;
+        $user_ids = [];
 
         $intersections[0] = new DateTimePeriod (Carbon::parse($event->startDate), null, $i_level);
         foreach ($points as $i => $point){
@@ -301,8 +302,16 @@ class EventsController extends Controller
                 $points[$i]->time = Carbon::parse($event->startDate);
             }
             $intersections[$i]->setEndDate($point->time);
-            if ($point->is_start) $i_level++;
-            else $i_level--;
+            if ($point->is_start){
+                if (count(array_keys($user_ids, $point->user_id)) == 0){
+                    $i_level++;}
+                array_push($user_ids, $point->user_id);
+            }
+            else{
+                if (count(array_keys($user_ids, $point->user_id)) == 1){
+                    $i_level--;}
+                unset($user_ids[array_search($point->user_id, $user_ids)]);
+            }
             $intersections[$i+1] = new DateTimePeriod ($point->time, null, $i_level);
         }
         array_pop($intersections);

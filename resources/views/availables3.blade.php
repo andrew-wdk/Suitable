@@ -221,15 +221,17 @@
         for (var i = 0; i < block_divs.length; i++){
             block_divs[i].style.opacity = null;
             if (level == null) continue;
-            if(block_divs[i].innerHTML != level){
+            if(block_divs[i].innerHTML > level){
                 block_divs[i].style.opacity = 0;
+            }else{
+                console.log(block_divs[i].innerHTML, level)
             }
         }
     }
 
     $(document).ready(function(){
     $(".level").hover(function(){
-    hide($(this).html());
+    hide(Number($(this).text()));
     }, function(){
     hide(null);
   });
