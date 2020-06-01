@@ -16,9 +16,9 @@ class UnavailablesTableSeeder extends Seeder
     {
         $user_ids = User::pluck('id')->toArray();
         $faker = Faker\Factory::create();
-        $prev = now();
 
         Foreach($user_ids as $id){
+            $prev = now();
             $count = rand(0, 4);
             for($i = 0; $i < $count; $i++){
                 Unavailable::create([

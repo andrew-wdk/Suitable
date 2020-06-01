@@ -86,7 +86,9 @@ class EventsController extends Controller
 
         $user = Auth::user();
         $availables = EventsController::availables($id);
-        $blocks = json_encode(EventsController::availables($id,1));
+        $javascript = EventsController::availables($id,1);
+        $blocks = json_encode($javascript[0]);
+        $arrays = json_encode($javascript[1]);
         $comments = [];
         foreach ($availables as $i=>$av) {
             $comments[$i] = Comment::where('event_id', '=', $id)
@@ -94,7 +96,7 @@ class EventsController extends Controller
                                     ->get();
         }
         $guests = Event::Find($id)->users;
-        return view('availables3', compact(['event', 'user', 'availables', 'comments', 'guests', 'blocks']));
+        return view('availables3', compact(['event', 'user', 'availables', 'comments', 'guests', 'blocks', 'arrays']));
     }
 
     /**=
@@ -216,12 +218,10 @@ class EventsController extends Controller
                                     ->get();
 
         //get the repeatables of the participants.
-        // if($js == 1) $repeatables = Repeatable::whereIn('user_id', $ids)->where('title', '!=', 'sleep')->get();
-        // else
         $repeatables = Repeatable::whereIn('user_id', $ids)->get();
 
 
-        // convert the unavailables to DateTimePeriod instances.
+        /** convert the unavailables to DateTimePeriod instances */
         $unav_periods = [];
         foreach ($unavailables as $unavailable) {
             array_push($unav_periods, New DateTimePeriod(
@@ -232,52 +232,9 @@ class EventsController extends Controller
         }
 
 
-        // add the repeatbles to the unav_periods array.
-        for ($i = Carbon::parse($event->startDate);
-             $i <= Carbon::parse($event->endDate);
-             $i->addDays('1'))
-        {
-            $day = $i->format('D');
-            foreach ($repeatables as $repeatable) {
-                if ($repeatable->$day == true)
-                {
-                    if ($repeatable->start >= $repeatable->end)
-                    {
-                        array_push($unav_periods, New DateTimePeriod(
-                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->start)->format('H:i:s')),
-                            new Carbon($i->copy()->addDays('1')->format('Y-m-d') .' ' .Carbon::parse($repeatable->end)->format('H:i:s')),
-                            $repeatable->user_id
-                        ));
-                    }
-                    else {
-                        array_push($unav_periods, New DateTimePeriod(
-                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->start)->format('H:i:s')),
-                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->end)->format('H:i:s')),
-                            $repeatable->user_id
-                        ));
-                    }
+        $this->addRepeatables($event, $repeatables, $unav_periods);
 
-                }
-            }
-        }
-
-        // sort the unav_periods array after adding the repeatables
-        usort($unav_periods, function ($a, $b){
-            if($a->startDate->lt($b->startDate)) return -1;
-            else if ($a->startDate->eq($b->startDate)) return 0;
-            else return 1;
-        });
-
-        // removes repeatbles that are out of the event range
-        foreach($unav_periods as $key => $period){
-            if($period->endDate->lt($event->startDate)
-            || $period->startDate->gt($event->endDate)){
-                // dd($period);
-                unset($unav_periods[$key]);
-            }
-        }
-
-        //separate unav_periods into single time stamps for computing the intersections
+        /** separate unav_periods into single time stamps for computing the intersections */
         $points = [];
         foreach ($unav_periods as $period){
             array_push($points, (object) ['time' => $period->startDate,
@@ -292,37 +249,41 @@ class EventsController extends Controller
             else return 1;
         });
 
-        //creat intersections array
+        /** create intersections array */
         $i_level = 0;
         $user_ids = [];
+        $user_arrays[0] = [];
 
         $intersections[0] = new DateTimePeriod (Carbon::parse($event->startDate), null, $i_level);
         foreach ($points as $i => $point){
-            if ($points[$i]->time->lt(Carbon::parse($event->startDate))){
-                $points[$i]->time = Carbon::parse($event->startDate);
-            }
+
             $intersections[$i]->setEndDate($point->time);
             if ($point->is_start){
-                if (count(array_keys($user_ids, $point->user_id)) == 0){
-                    $i_level++;}
-                array_push($user_ids, $point->user_id);
+                if (!in_array($point->user_id, $user_ids)){
+                    $i_level++;
+                    array_push($user_ids, $point->user_id);
+                }
+                $user_arrays[$i+1] = $user_ids;
             }
             else{
-                if (count(array_keys($user_ids, $point->user_id)) == 1){
-                    $i_level--;}
-                unset($user_ids[array_search($point->user_id, $user_ids)]);
+                if (in_array($point->user_id, $user_ids)){
+                    $i_level--;
+                    unset($user_ids[array_search($point->user_id, $user_ids)]);
+                    $user_ids = array_values($user_ids);
+                }
+                $user_arrays[$i+1] = $user_ids;
             }
             $intersections[$i+1] = new DateTimePeriod ($point->time, null, $i_level);
         }
         array_pop($intersections);
 
-        if($js == 1) return $intersections;
+        if($js == 1) return [$intersections, $user_arrays];
 
         // creates an array of available periods.
         $event_periods = [New DateTimePeriod($event->startDate, $event->endDate)];
 
 
-        //split the available periods based on the unavailables.
+        /** split the available periods based on the unavailables. */
         foreach ($unav_periods as $period) {
             foreach ($event_periods as $event_period) {
                 switch (DateTimePeriod::periodCompare($period, $event_period)){
@@ -353,5 +314,63 @@ class EventsController extends Controller
         // echo(json_encode($intersections));
         // exit;
         return $event_periods;
+    }
+
+
+    public function addRepeatables($event, $repeatables, &$unav_periods)
+    {
+        /** add the repeatbles to the unav_periods array */
+        for ($i = Carbon::parse($event->startDate);
+             $i <= Carbon::parse($event->endDate);
+             $i->addDays('1'))
+        {
+            $day = $i->format('D');
+            foreach ($repeatables as $repeatable) {
+                if ($repeatable->$day == true)
+                {
+                    if ($repeatable->start >= $repeatable->end)
+                    {
+                        array_push($unav_periods, New DateTimePeriod(
+                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->start)->format('H:i:s')),
+                            new Carbon($i->copy()->addDays('1')->format('Y-m-d') .' ' .Carbon::parse($repeatable->end)->format('H:i:s')),
+                            $repeatable->user_id
+                        ));
+                    }
+                    else {
+                        array_push($unav_periods, New DateTimePeriod(
+                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->start)->format('H:i:s')),
+                            new Carbon($i->format('Y-m-d') .' ' .Carbon::parse($repeatable->end)->format('H:i:s')),
+                            $repeatable->user_id
+                        ));
+                    }
+
+                }
+            }
+        }
+
+
+        /** sort the unav_periods array after adding the repeatables */
+        usort($unav_periods, function ($a, $b){
+            if($a->startDate->lt($b->startDate)) return -1;
+            else if ($a->startDate->eq($b->startDate)) return 0;
+            else return 1;
+        });
+
+
+        /** remove or trim periods that are out of the event range */
+        foreach($unav_periods as $key => $period){
+            if($period->endDate->lt($event->startDate)
+            || $period->startDate->gt($event->endDate)){
+                // dd($period);
+                unset($unav_periods[$key]);
+            }elseif($period->startDate->lt($event->startDate)){
+                $period->startDate = new Carbon($event->startDate);
+            }
+            elseif($period->endDate->gt($event->endDate)){
+                $period->endDate = new Carbon($event->endDate);
+            }
+        }
+        // dd($event->endDate);
+        // dd($unav_periods);
     }
 }

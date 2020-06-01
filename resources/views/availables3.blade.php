@@ -123,25 +123,21 @@
 @section('scripts')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 @javascript('test', $blocks)
+@javascript('user_arrays', $arrays)
 <script>
 
     var blocks = JSON.parse(test);
-    console.log(blocks);
-    var drawn = document.getElementsByClassName("js");
-    if(drawn.length > 0){
-        for (var i = 0; i < drawn.length; i++) {
-            drawn[i].remove()
-        }
-    }
+    var arrays = JSON.parse(user_arrays);
+    // console.log(blocks);
 
     var cont = document.getElementById("container");
     var startDate = new Date(blocks[0].startDate);
+    startDate.setHours(startDate.getHours()+startDate.getTimezoneOffset()/60);
     var day = startDate.getDate();
 
     var row = document.getElementById("first_row");
     var first_block = document.createElement("DIV");
     first_block.style.width = (startDate.getTime()-startDate.setHours(0,0,0))/900000+"%";
-    first_block.className = "js"
     row.appendChild(first_block);
 
     var sorted = Object.create(blocks);
@@ -162,8 +158,13 @@
     for (let i = 0; i < blocks.length; i++) {
 
         var date = new Date(blocks[i].startDate);
+        date.setHours(date.getHours()+date.getTimezoneOffset()/60);
         var endDate = new Date(blocks[i].endDate);
+        endDate.setHours(endDate.getHours()+endDate.getTimezoneOffset()/60);
         var child = document.createElement("DIV");
+
+        var users = arrays[i];
+        child.title = users.toString();
 
         child.style.backgroundColor = heatMap(blocks[i].user_id, max_level);
 
@@ -223,8 +224,6 @@
             if (level == null) continue;
             if(block_divs[i].innerHTML > level){
                 block_divs[i].style.opacity = 0;
-            }else{
-                console.log(block_divs[i].innerHTML, level)
             }
         }
     }
