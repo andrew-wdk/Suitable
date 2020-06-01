@@ -8,7 +8,7 @@ use App\Event;
 use App\User;
 use App\Unavailable;
 use App\Repeatable;
-use App\comment;
+use App\Comment;
 use Illuminate\Support\Facades\Auth;
 use App\DateTimePeriod;
 use Carbon\Carbon;
