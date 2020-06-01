@@ -129,8 +129,9 @@ class EventsController extends Controller
      */
     public function destroy($id)
     {
+        $event = Event::Find($id);
         $this->authorize('delete', $event);
-        Event::Find($id)->delete();
+        $event->delete();
         return redirect('/events');
     }
 
