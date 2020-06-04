@@ -122,13 +122,13 @@
 
 @section('scripts')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-@javascript('test', $blocks)
-@javascript('user_arrays', $arrays)
+@javascript('intersections', $blocks)
+@javascript('guests', json_encode($guests))
 <script>
 
-    var blocks = JSON.parse(test);
-    var arrays = JSON.parse(user_arrays);
-    // console.log(blocks);
+    var blocks = JSON.parse(intersections);
+    var participants = JSON.parse(guests);
+    console.log(blocks);
 
     var cont = document.getElementById("container");
     var startDate = new Date(blocks[0].startDate);
@@ -141,8 +141,8 @@
     row.appendChild(first_block);
 
     var sorted = Object.create(blocks);
-    sorted.sort(function(a, b){return b.user_id - a.user_id});
-    var max_level = sorted[0].user_id;
+    sorted.sort(function(a, b){return b.user_count - a.user_count});
+    var max_level = sorted[0].user_count;
     if (max_level < 12) max_level = 12;
 
     function heatMap(level, max){
@@ -163,19 +163,22 @@
         endDate.setHours(endDate.getHours()+endDate.getTimezoneOffset()/60);
         var child = document.createElement("DIV");
 
-        var users = arrays[i];
+        var users = blocks[i].user_id;
+        for (let i = 0; i < users.length; i++) {
+            users[i] = '\n'.concat(participants.find(item => item.id == users[i]).name);
+        }
         child.title = users.toString();
 
-        child.style.backgroundColor = heatMap(blocks[i].user_id, max_level);
+        child.style.backgroundColor = heatMap(blocks[i].user_count, max_level);
 
 
         if (endDate.getDate() != date.getDate()){
             var overflow = endDate.getTime()-endDate.setHours(0,0,0);
             var child2 = document.createElement("DIV");
             child2.className = "block";
-            child2.innerHTML = blocks[i].user_id;
+            child2.innerHTML = blocks[i].user_count;
             child2.style.width = overflow/900000 + "%";
-            child2.style.backgroundColor = heatMap(blocks[i].user_id, max_level);
+            child2.style.backgroundColor = heatMap(blocks[i].user_count, max_level);
             var width = (endDate-date)/900000;
         }
         else{
@@ -183,7 +186,7 @@
         }
 
         child.className = "block";
-        child.innerHTML = blocks[i].user_id;
+        child.innerHTML = blocks[i].user_count;
         child.style.width = width + "%";
 
         function newRow(){

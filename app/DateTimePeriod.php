@@ -10,6 +10,7 @@ Class DateTimePeriod
     public $endDate;
     public $user_id;
     public $length;
+    public $user_count;
 
     public function __Construct($start, $end, $user_id=null)
     {
@@ -25,6 +26,11 @@ Class DateTimePeriod
         $this->length = $this->startDate->floatDiffInHours($this->endDate);
     }
 
+    public function setUserIds($user_ids)
+    {
+        $this->user_id = $user_ids;
+        $this->user_count = is_array($user_ids) ? count(array_unique($user_ids)) : 1;
+    }
 
     public static function periodCompare ($p1, $p2)
     {

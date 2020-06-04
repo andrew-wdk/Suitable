@@ -86,9 +86,7 @@ class EventsController extends Controller
 
         $user = Auth::user();
         $availables = EventsController::availables($id);
-        $javascript = EventsController::availables($id,1);
-        $blocks = json_encode($javascript[0]);
-        $arrays = json_encode($javascript[1]);
+        $blocks = json_encode(EventsController::availables($id,1));
         $comments = [];
         foreach ($availables as $i=>$av) {
             $comments[$i] = Comment::where('event_id', '=', $id)
@@ -96,7 +94,7 @@ class EventsController extends Controller
                                     ->get();
         }
         $guests = Event::Find($id)->users;
-        return view('availables3', compact(['event', 'user', 'availables', 'comments', 'guests', 'blocks', 'arrays']));
+        return view('availables3', compact(['event', 'user', 'availables', 'comments', 'guests', 'blocks']));
     }
 
     /**=
@@ -251,34 +249,26 @@ class EventsController extends Controller
         });
 
         /** create intersections array */
-        $i_level = 0;
         $user_ids = [];
-        $user_arrays[0] = [];
 
-        $intersections[0] = new DateTimePeriod (Carbon::parse($event->startDate), null, $i_level);
+        $intersections[0] = new DateTimePeriod (Carbon::parse($event->startDate), null);
+        $intersections[0]->setUserIds($user_ids);
         foreach ($points as $i => $point){
 
             $intersections[$i]->setEndDate($point->time);
             if ($point->is_start){
-                if (!in_array($point->user_id, $user_ids)){
-                    $i_level++;
-                    array_push($user_ids, $point->user_id);
-                }
-                $user_arrays[$i+1] = $user_ids;
+                array_push($user_ids, $point->user_id);
             }
             else{
-                if (in_array($point->user_id, $user_ids)){
-                    $i_level--;
-                    unset($user_ids[array_search($point->user_id, $user_ids)]);
-                    $user_ids = array_values($user_ids);
-                }
-                $user_arrays[$i+1] = $user_ids;
+                unset($user_ids[array_search($point->user_id, $user_ids)]);
+                $user_ids = array_values($user_ids);
             }
-            $intersections[$i+1] = new DateTimePeriod ($point->time, null, $i_level);
+            $intersections[$i+1] = new DateTimePeriod ($point->time, null);
+            $intersections[$i+1]->setUserIds($user_ids);
         }
         array_pop($intersections);
 
-        if($js == 1) return [$intersections, $user_arrays];
+        if($js == 1) return $intersections;
 
         // creates an array of available periods.
         $event_periods = [New DateTimePeriod($event->startDate, $event->endDate)];
