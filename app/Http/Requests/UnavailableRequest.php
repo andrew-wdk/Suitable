@@ -30,8 +30,8 @@ class UnavailableRequest extends FormRequest
     public function rules()
     {
         return [
-            'start' => 'required|date_format:Y-m-d H:i:s',
-            'end' => 'required|date_format:Y-m-d H:i:s|after:start',
+            'start' => 'required|date_format:Y-m-d H:i',
+            'end' => 'required|date_format:Y-m-d H:i|after:start',
             'priority' => 'required|numeric',
             //'difference' =>'min:1'
         ];

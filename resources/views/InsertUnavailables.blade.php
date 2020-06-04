@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@section('styles')
+<link href="{{url('../resources/rome-master/dist/rome.css')}}" rel="stylesheet">
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -9,27 +13,29 @@
 
                     <div class="card-body">
 
+
                     {{ Form::open(['method' => 'POST', 'action' => 'UnavailablesController@store']) }}
 
-                    <dev>
+
+                    <div>
                     {{ Form::label('start', 'Start:') }}
-                    {{ Form::datetime('start', date('Y-m-d H:i').':00') }}
+                    {{ Form::datetime('start', date('Y-m-d H:i'), ['id' => 'start']) }}
                     <br>
-                    </dev>
+                    </div>
 
-                    <dev>
+                    <div>
                     {{ Form::label('end', 'End:') }}
-                    {{ Form::datetime('end', date('Y-m-d H:i').':00') }}
+                    {{ Form::datetime('end', date('Y-m-d H:i'), ['id' => 'end']) }}
                     <br>
-                    </dev>
+                    </div>
 
-                    <dev>
+                    <div>
                     {{ Form::label('title', 'Title:') }}
                     {{ Form::text('title', null) }}
                     <br>
-                    </dev>
+                    </div>
 
-                    <dev>
+                    <div>
                     {{ Form::label('Repeat', 'Repeat every: Sun ') }}
                     {{ Form::checkbox('7', true)}}
                     {{ Form::label('Mon', ' Mon ') }}
@@ -45,11 +51,11 @@
                     {{ Form::label('Sat', ' Sat ') }}
                     {{ Form::checkbox('6', true)}}
                     <br>
-                    </dev>
+                    </div>
 
-                    <dev>
+                    <div>
                     {{ Form::text('priority', '1', $attributes = array('hidden')) }}
-                    </dev>
+                    </div>
 
                     {{ Form::submit('insert') }}
 
@@ -64,4 +70,12 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{url('../resources/rome-master/dist/rome.js')}}"></script>
+<script>
+rome(start);
+rome(end);
+</script>
 @endsection

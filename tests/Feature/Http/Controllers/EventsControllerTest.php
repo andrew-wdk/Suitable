@@ -49,19 +49,19 @@ class EventsControllerTest extends TestCase
         // $this->withoutExceptionHandling();
         $user = User::Find(1);
         $response = $this->actingAs($user)
-        ->post('events', ['title' => '','startDate' => "2020-01-01 03:00:00", 'endDate' => "2020-01-05 03:00:00",
+        ->post('events', ['title' => '','startDate' => "2020-01-01 03:00", 'endDate' => "2020-01-05 03:00",
          'participants' => 1]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('title');
 
         $response = $this->actingAs($user)
-        ->post('events', ['title' => 'title','startDate' => "2020-01-01 3:00:00", 'endDate' => "2020-01-05 03:00:00",
+        ->post('events', ['title' => 'title','startDate' => "2020-01-01 3:00", 'endDate' => "2020-01-05 03:00",
          'participants' => 1]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('startDate');
 
         $response = $this->actingAs($user)
-        ->post('events', ['title' => 'title','startDate' => "2020-01-01 03:00:00", 'endDate' => "2020-01-01 03:00:00",
+        ->post('events', ['title' => 'title','startDate' => "2020-01-01 03:00", 'endDate' => "2020-01-01 03:00",
          'participants' => 1]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('endDate');
@@ -73,7 +73,7 @@ class EventsControllerTest extends TestCase
         // $this->withoutExceptionHandling();
         $user = User::Find(1);
         $response = $this->actingAs($user)
-        ->post('events', ['title' => $title = 'title', 'startDate' => $start = "2020-01-01 03:00:00", 'endDate' => $end = "2020-01-05 05:00:00",
+        ->post('events', ['title' => $title = 'title', 'startDate' => $start = "2020-01-01 03:00", 'endDate' => $end = "2020-01-05 05:00",
          'duration' => $duration = 5, 'participants' => $participants = 1]);
 
         $response->assertStatus(302);

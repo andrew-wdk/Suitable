@@ -26,8 +26,8 @@ class EventRequest extends FormRequest
         return [
             'title' => 'required',
             'duration' => 'required|numeric',
-            'startDate' => 'required|date_format:Y-m-d H:i:s',
-            'endDate' => 'required|date_format:Y-m-d H:i:s|after:startDate',
+            'startDate' => 'required|date_format:Y-m-d H:i',
+            'endDate' => 'required|date_format:Y-m-d H:i|after:startDate',
             'participants' => 'required'
         ];
     }

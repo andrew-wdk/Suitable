@@ -22,7 +22,7 @@ class UnavailablesControllerTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'UsersTableSeeder']);
 
     }
-    
+
      /** @test */
     public function user_can_view_unavailables_page()
     {
@@ -58,19 +58,19 @@ class UnavailablesControllerTest extends TestCase
         // $this->withoutExceptionHandling();
         $user = User::Find(1);
         $response = $this->actingAs($user)
-        ->post('unavailables', ['start' => "2020-01-01 03:00:00", 'end' => "2020-01-01 03:00:00",
+        ->post('unavailables', ['start' => "2020-01-01 03:00", 'end' => "2020-01-01 03:00",
          'priority' => 1]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('end');
 
         $response = $this->actingAs($user)
-        ->post('unavailables', ['start' => "2020-01-01 3:00:00", 'end' => "2020-01-01 08:00:00",
+        ->post('unavailables', ['start' => "2020-01-01 3:00", 'end' => "2020-01-01 08:00",
          'priority' => 1]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('start');
 
         $response = $this->actingAs($user)
-        ->post('unavailables', ['start' => "2020-01-01 3:00:00", 'end' => "2020-01-01 08:00:00"]);
+        ->post('unavailables', ['start' => "2020-01-01 3:00", 'end' => "2020-01-01 08:00"]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors('priority');
     }
@@ -81,7 +81,7 @@ class UnavailablesControllerTest extends TestCase
         $this->withoutExceptionHandling();
         $user = User::Find(1);
         $response = $this->actingAs($user)
-        ->post('unavailables', ['start' => $start = "2020-01-01 03:00:00", 'end' => $end = "2020-01-01 05:00:00",
+        ->post('unavailables', ['start' => $start = "2020-01-01 03:00", 'end' => $end = "2020-01-01 05:00",
          'priority' => $priority = 1]);
 
         // $response->assertViewIs('Home');
@@ -99,7 +99,7 @@ class UnavailablesControllerTest extends TestCase
         $this->withoutExceptionHandling();
         $user = User::Find(1);
         $response = $this->actingAs($user)
-        ->post('unavailables', ['start' => $start = "2020-01-01 03:00:00", 'end' => $end = "2020-01-01 05:00:00",
+        ->post('unavailables', ['start' => $start = "2020-01-01 03:00", 'end' => $end = "2020-01-01 05:00",
          'priority' => $priority = 1, '7' => true]);
 
         // $response->assertViewIs('Home');
